@@ -13,22 +13,35 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`/api/vacancies${path}`, { ...init, headers: { Accept: "application/json", "Content-Type": "application/json", ...init?.headers } });
+  const response = await fetch(path, { ...init, headers: { Accept: "application/json", "Content-Type": "application/json", ...init?.headers } });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
     throw new ApiError(response.status, body.errors ?? {});
   }
+  if (response.status === 204) return undefined as T;
   return (await response.json()).data as T;
 }
 
 export function fetchVacancies(query = "") {
-  return request<Vacancy[]>(query.trim() ? `?q=${encodeURIComponent(query.trim())}` : "");
+  return request<Vacancy[]>(query.trim() ? `/api/vacancies?q=${encodeURIComponent(query.trim())}` : "/api/vacancies");
 }
 
 export function fetchVacancy(id: string) {
-  return request<Vacancy>(`/${encodeURIComponent(id)}`);
+  return request<Vacancy>(`/api/vacancies/${encodeURIComponent(id)}`);
 }
 
 export function createVacancy(data: VacancyInput) {
-  return request<Vacancy>("", { method: "POST", body: JSON.stringify(data) });
+  return request<Vacancy>("/api/vacancies", { method: "POST", body: JSON.stringify(data) });
+}
+
+export function fetchDashboardVacancies() {
+  return request<Vacancy[]>("/api/dashboard/vacancies");
+}
+
+export function updateVacancy(id: number, data: VacancyInput) {
+  return request<Vacancy>(`/api/vacancies/${id}`, { method: "PUT", body: JSON.stringify(data) });
+}
+
+export function deleteVacancy(id: number) {
+  return request<void>(`/api/vacancies/${id}`, { method: "DELETE" });
 }

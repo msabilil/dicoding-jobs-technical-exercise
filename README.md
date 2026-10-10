@@ -1,6 +1,6 @@
 # Dicoding Jobs Technical Exercise
 
-Aplikasi lowongan sederhana untuk membuat, mencari berdasarkan judul, dan melihat detail lowongan. Solusi ini memakai Laravel 12 untuk REST API, Next.js 16 untuk antarmuka, TanStack Query untuk pengambilan data, dan database SQL. SQLite dipakai sebagai pilihan awal agar penilai dapat menjalankan proyek tanpa memasang server database; MySQL juga didukung oleh konfigurasi Laravel.
+Aplikasi lowongan sederhana untuk membuat, mencari berdasarkan judul, melihat detail, dan mengelola lowongan lewat Dashboard. Solusi ini memakai Laravel 12 untuk REST API, Next.js 16 untuk antarmuka, TanStack Query untuk pengambilan data, dan database SQL. SQLite dipakai sebagai pilihan awal agar penilai dapat menjalankan proyek tanpa memasang server database; MySQL juga didukung oleh konfigurasi Laravel.
 
 ## Prasyarat
 
@@ -31,7 +31,7 @@ Aplikasi lowongan sederhana untuk membuat, mencari berdasarkan judul, dan meliha
    npm run dev -- --hostname 127.0.0.1 --port 3000
    ```
 
-3. Buka `http://127.0.0.1:3000`. Formulir ada di `/buat-lowongan`. Setelah disimpan, lowongan muncul pada daftar; kolom pencarian memfilter judul; klik kartu untuk membaca detail.
+3. Buka `http://127.0.0.1:3000`. Header menyediakan **Lowongan Kerja** untuk pencarian dan detail, serta **Dashboard** di `/dashboard` untuk membuat, mengedit, dan menghapus lowongan. Formulir pembuatan ada di `/buat-lowongan`.
 
 Frontend meneruskan permintaan `/api/*` ke `http://127.0.0.1:8000`. Jika backend memakai alamat lain, set `LARAVEL_API_URL` saat menjalankan Next.js, misalnya `LARAVEL_API_URL=http://127.0.0.1:8080 npm run dev`.
 
@@ -46,8 +46,11 @@ Buat database kosong, lalu ubah bagian database di `backend/.env` menjadi `DB_CO
 | `GET` | `/api/vacancies` | Daftar lowongan aktif, terbaru lebih dahulu. `?q=judul` mencari sebagian judul tanpa membedakan kapital. |
 | `POST` | `/api/vacancies` | Membuat lowongan (`201`); masukan tidak valid mengembalikan `422` dan `errors` per bidang. |
 | `GET` | `/api/vacancies/{id}` | Detail lowongan; ID tidak ada menghasilkan `404`. |
+| `GET` | `/api/dashboard/vacancies` | Semua lowongan untuk Dashboard, termasuk yang sudah kedaluwarsa. |
+| `PUT` | `/api/vacancies/{id}` | Memperbarui lowongan dengan validasi yang sama seperti pembuatan. |
+| `DELETE` | `/api/vacancies/{id}` | Menghapus lowongan (`204`). |
 
-Respons sukses memakai kunci `data`. Formulir memakai pilihan pekerjaan dan pengalaman yang sama dengan validasi backend, disimpan di `frontend/src/lib/vacancy-options.json`. Profil perusahaan demo ialah Dicoding Indonesia. Belum ada autentikasi karena ini alur latihan.
+Respons sukses selain penghapusan memakai kunci `data`. Formulir memakai pilihan pekerjaan dan pengalaman yang sama dengan validasi backend, disimpan di `frontend/src/lib/vacancy-options.json`. Profil perusahaan demo ialah Dicoding Indonesia. Aplikasi latihan ini belum memakai autentikasi; Dashboard menampilkan semua lowongan dan endpoint edit/hapus tidak membatasi pemilik. Jangan gunakan apa adanya untuk data publik sungguhan.
 
 ## Menjalankan tes
 
@@ -67,8 +70,8 @@ npm run lint
 npm run build
 ```
 
-Playwright menyalakan Laravel dan Next.js sendiri. Sebelum tes, ia membuat `backend/database/playwright.sqlite` lalu menjalankan migrasi. Satu tes menjalankan alur nyata dari formulir Next.js sampai pencarian dan detail melalui Laravel; tes browser lain memakai respons API tetap untuk memeriksa keadaan UI secara konsisten. Berkas database tes diabaikan Git.
+Playwright menyalakan Laravel dan Next.js sendiri. Sebelum tes, ia membuat `backend/database/playwright.sqlite` lalu menjalankan migrasi. Tes alur nyata mencakup pembuatan, pencarian, detail, Dashboard, edit, dan hapus melalui Laravel; tes browser lain memakai respons API tetap untuk memeriksa keadaan UI secara konsisten. Berkas database tes diabaikan Git. Hentikan server lokal di port 8000 dan 3000 sebelum menjalankan Playwright.
 
 ## Catatan desain
 
-Antarmuka mengikuti referensi Dicoding Jobs pada brief: navigasi putih, hero gelap, kartu lowongan, halaman detail, formulir, dan footer. Deskripsi mendukung format dasar seperti tebal, miring, dan daftar; API membatasi tag HTML yang tersimpan. Daftar hanya menampilkan lowongan yang tanggal aktifnya belum lewat. Pengeditan, penghapusan, dan dashboard merupakan fitur opsional di luar cakupan tugas ini.
+Antarmuka mengikuti referensi Dicoding Jobs pada brief: navigasi putih, hero gelap, kartu lowongan, halaman detail, formulir, Dashboard, dan footer. Logo serta foto hero diambil dari situs resmi Dicoding Jobs dan Dicoding. Deskripsi mendukung format dasar seperti tebal, miring, dan daftar; API membatasi tag HTML yang tersimpan. Daftar publik hanya menampilkan lowongan yang tanggal aktifnya belum lewat.
