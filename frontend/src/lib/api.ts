@@ -6,7 +6,7 @@ export type Vacancy = {
   minimum_experience: string; created_at: string;
 };
 
-export type VacancyInput = Omit<Vacancy, "id" | "created_at">;
+export type VacancyInput = Omit<Vacancy, "id" | "created_at" | "salary_min"> & { salary_min: number | null };
 
 export class ApiError extends Error {
   constructor(public status: number, public errors: Record<string, string[]> = {}) { super(`HTTP ${status}`); }

@@ -5,18 +5,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiError, createVacancy, VacancyInput } from "@/lib/api";
+import options from "@/lib/vacancy-options.json";
 
 const positions = ["Engineering", "Product", "Design", "Data", "Quality Assurance", "Other"];
 const locations = ["Bandung", "Jakarta", "Surabaya", "Yogyakarta", "Semarang", "Medan", "Lainnya"];
-const types = ["Full-Time", "Part-Time", "Kontrak", "Intern"];
-const experiences = ["Kurang dari 1 tahun", "1-3 tahun", "4-5 tahun", "6-10 tahun", "Lebih dari 10 tahun"];
+const types = options.employmentTypes;
+const experiences = options.minimumExperiences;
 
 export default function CreateVacancy() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const editor = useRef<HTMLDivElement>(null);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
-  const mutation = useMutation({ mutationFn: createVacancy, onSuccess: vacancy => { queryClient.invalidateQueries({ queryKey: ["vacancies"] }); router.push(`/lowongan/${vacancy.id}`); }, onError: error => { if (error instanceof ApiError) setErrors(error.errors); } });
+  const mutation = useMutation({ mutationFn: createVacancy, onSuccess: vacancy => { queryClient.invalidateQueries({ queryKey: ["vacancies"] }); router.push(`/?created=${encodeURIComponent(vacancy.title)}`); }, onError: error => { if (error instanceof ApiError) setErrors(error.errors); } });
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,7 +28,7 @@ export default function CreateVacancy() {
       employment_type: String(form.get("employment_type") ?? ""), candidate_count: Number(form.get("candidate_count")),
       active_until: String(form.get("active_until") ?? ""), location: String(form.get("location") ?? ""),
       is_remote: form.has("is_remote"), description: editor.current?.innerHTML ?? "",
-      salary_min: Number(form.get("salary_min")), salary_max: form.get("salary_max") ? Number(form.get("salary_max")) : null,
+      salary_min: form.get("salary_min") ? Number(form.get("salary_min")) : null, salary_max: form.get("salary_max") ? Number(form.get("salary_max")) : null,
       show_salary: form.has("show_salary"), minimum_experience: String(form.get("minimum_experience") ?? ""),
     };
     mutation.mutate(input);
@@ -44,7 +45,7 @@ export default function CreateVacancy() {
       <label className="field">Aktif hingga <em>*</em><input name="active_until" type="date" required />{fieldError("active_until")}</label>
       <div className="field"><label>Lokasi <em>*</em><select name="location" required><option value="">Pilih lokasi</option>{locations.map(value => <option key={value}>{value}</option>)}</select></label>{fieldError("location")}<label className="choice"><input type="checkbox" name="is_remote" /> Bisa remote</label></div>
       <div className="field"><label htmlFor="description">Deskripsi <em>*</em></label><div className="editor-toolbar" aria-label="Format deskripsi"><button type="button" onClick={() => document.execCommand("bold")} aria-label="Tebal"><b>B</b></button><button type="button" onClick={() => document.execCommand("italic")} aria-label="Miring"><i>I</i></button><button type="button" onClick={() => document.execCommand("insertUnorderedList")} aria-label="Daftar poin">• List</button></div><div id="description" className="editor" contentEditable suppressContentEditableWarning ref={editor} role="textbox" aria-multiline="true" aria-label="Deskripsi" /><small>Jelaskan deskripsi pekerjaan, tanggung jawab, dan persyaratan.</small>{fieldError("description")}</div>
-      <div className="field"><label>Rentang gaji per bulan <em>*</em></label><div className="salary-row"><label><span>Rp</span><input name="salary_min" aria-label="Gaji minimum" type="number" min="0" placeholder="Minimum" required /></label><span>–</span><label><span>Rp</span><input name="salary_max" aria-label="Gaji maksimum" type="number" min="0" placeholder="Maksimum (opsional)" /></label></div>{fieldError("salary_min")}{fieldError("salary_max")}<small>Anda tidak perlu mengisi kolom "Maksimum" jika yang dimasukkan adalah gaji pokok.</small><label className="choice"><input type="checkbox" name="show_salary" /> Tampilkan gaji</label></div>
+      <div className="field"><label>Rentang gaji per bulan <em>*</em></label><div className="salary-row"><label><span>Rp</span><input name="salary_min" aria-label="Gaji minimum" type="number" min="0" placeholder="Minimum" required /></label><span>–</span><label><span>Rp</span><input name="salary_max" aria-label="Gaji maksimum" type="number" min="0" placeholder="Maksimum (opsional)" /></label></div>{fieldError("salary_min")}{fieldError("salary_max")}<small>Anda tidak perlu mengisi kolom &quot;Maksimum&quot; jika yang dimasukkan adalah gaji pokok.</small><label className="choice"><input type="checkbox" name="show_salary" /> Tampilkan gaji</label></div>
       <fieldset className="field"><legend>Minimum pengalaman bekerja <em>*</em></legend>{experiences.map(value => <label className="choice" key={value}><input type="radio" name="minimum_experience" value={value} /> {value}</label>)}{fieldError("minimum_experience")}</fieldset>
       {mutation.isError && Object.keys(errors).length === 0 && <p role="alert">Lowongan gagal disimpan. Coba lagi.</p>}
       <div className="form-actions"><button className="primary-button" type="submit" disabled={mutation.isPending}>{mutation.isPending ? "Menyimpan..." : "Buat lowongan"}</button><Link className="secondary-button" href="/">Batal</Link></div>
