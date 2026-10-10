@@ -9,7 +9,7 @@ test("recruiter creates a vacancy that job seeker can find and inspect through L
   await page.getByRole("spinbutton", { name: /Kandidat yang dibutuhkan/ }).fill("1");
   await page.getByLabel("Aktif hingga *").fill("2099-12-30");
   await page.getByLabel("Lokasi *").selectOption("Bandung");
-  await page.getByRole("textbox", { name: "Deskripsi" }).fill("Membangun produk bersama tim.");
+  await page.locator(".editorjs [contenteditable='true']").first().fill("Membangun produk bersama tim.");
   await page.getByRole("spinbutton", { name: "Gaji minimum" }).fill("6000000");
   await page.getByLabel("1-3 tahun").check();
   await page.getByRole("button", { name: "Buat lowongan" }).click();

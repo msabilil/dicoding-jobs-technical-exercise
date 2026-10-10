@@ -1,14 +1,14 @@
 import { expect, Page, test } from "@playwright/test";
 import { mockVacancies, vacancies } from "./fixtures";
 
-async function fillVacancyForm(page: Page, salary: string | null) {
+async function fillVacancyForm(page: Page, salary: string | null, withDescription = true) {
   await page.getByRole("textbox", { name: /Judul lowongan/ }).fill("Frontend Engineer");
   await page.getByLabel("Posisi *").selectOption("Engineering");
   await page.getByLabel("Full-Time").check();
   await page.getByRole("spinbutton", { name: /Kandidat yang dibutuhkan/ }).fill("2");
   await page.getByLabel("Aktif hingga *").fill("2099-12-30");
   await page.getByLabel("Lokasi *").selectOption("Bandung");
-  await page.getByRole("textbox", { name: "Deskripsi" }).fill("Bangun antarmuka.");
+  if (withDescription) await page.locator(".editorjs [contenteditable='true']").first().fill("Bangun antarmuka.");
   if (salary !== null) await page.getByRole("spinbutton", { name: "Gaji minimum" }).fill(salary);
   await page.getByLabel("1-3 tahun").check();
 }
@@ -42,4 +42,17 @@ test("blank minimum salary is rejected without becoming zero", async ({ page }) 
   await page.getByRole("button", { name: "Buat lowongan" }).click();
   await expect(page.getByText("Gaji minimum wajib diisi.")).toBeVisible();
   expect(submittedSalary).toBeNull();
+});
+
+test("blank Editor.js description is rejected", async ({ page }) => {
+  let submittedDescription: unknown = "not submitted";
+  await page.route(/\/api\/vacancies$/, async route => {
+    submittedDescription = route.request().postDataJSON().description;
+    await route.fulfill({ status: 422, json: { errors: { description: ["Deskripsi wajib diisi."] } } });
+  });
+  await page.goto("/buat-lowongan");
+  await fillVacancyForm(page, "6000000", false);
+  await page.getByRole("button", { name: "Buat lowongan" }).click();
+  await expect(page.getByText("Deskripsi wajib diisi.")).toBeVisible();
+  expect(submittedDescription).toBe("");
 });

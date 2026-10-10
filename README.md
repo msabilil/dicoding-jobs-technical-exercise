@@ -74,4 +74,4 @@ Playwright menyalakan Laravel dan Next.js sendiri. Sebelum tes, ia membuat `back
 
 ## Catatan desain
 
-Antarmuka mengikuti referensi Dicoding Jobs pada brief: navigasi putih, hero gelap, kartu lowongan, halaman detail, formulir, Dashboard, dan footer. Logo serta foto hero diambil dari situs resmi Dicoding Jobs dan Dicoding. Deskripsi mendukung format dasar seperti tebal, miring, dan daftar; API membatasi tag HTML yang tersimpan. Daftar publik hanya menampilkan lowongan yang tanggal aktifnya belum lewat.
+Antarmuka mengikuti referensi Dicoding Jobs pada brief: navigasi putih, hero gelap, kartu lowongan, halaman detail, formulir, Dashboard, dan footer. Logo serta foto hero diambil dari situs resmi Dicoding Jobs dan Dicoding. Input deskripsi memakai Editor.js dengan paragraf, judul, daftar, serta format tebal/miring. Hasil blok Editor.js diubah menjadi HTML terbatas sebelum dikirim ke API agar deskripsi lama tetap bisa diedit dan halaman detail tetap kompatibel; API membatasi tag HTML yang tersimpan. Daftar publik hanya menampilkan lowongan yang tanggal aktifnya belum lewat.
